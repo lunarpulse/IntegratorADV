@@ -1,0 +1,6 @@
+*.xml
+.cpro*
+.proj*
+Debug
+.settings
+
