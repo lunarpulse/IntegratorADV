@@ -14,7 +14,7 @@
 /* Include core modules */
 #include "stm32fxxx_hal.h"
 /* Include my libraries here */
-#include "defines.h"
+//#include "defines.h"
 
 #include <stm32f4xx.h>
 #include <stm32f4xx_i2c.h>
@@ -24,6 +24,8 @@
 
 #include "hal_i2c.h"
 #include "hal_usart.h"
+#include "queue.h"
+
 //#include "tm_stm32_disco.h"
 //#include "tm_stm32_delay.h"
 //#include "tm_stm32_mpu9250.h"
@@ -33,10 +35,11 @@
 #include "stdio.h"
 
 
-TM_MPU9250_t MPU9250;
+//TM_MPU9250_t MPU9250;
 
-TM_AHRSIMU_t IMU;
-
+//TM_AHRSIMU_t IMU;
+extern int TxPrimed = 0;
+extern int RxOverflow = 0;
 //USART_TypeDef* uart1;
 //USART_TypeDef* uart2;
 //USART_TypeDef* uart3;
@@ -44,7 +47,7 @@ TM_AHRSIMU_t IMU;
 
 int main(void) {
 	// use all the usarts
-	uint16_t flag;
+	uint16_t flag = 1;
 	//uart1 = USART1;
 	//uart2 = USART2;
 	//uart3 = USART3;
@@ -53,44 +56,48 @@ int main(void) {
 	/* Initialize system */
 	SystemInit();
     
-    HAL_Init();
-	
-    int result;
-	result = uart_init(USART1, 38400, flag);
-	result = uart_init(USART2, 38400, flag);
-	result = uart_init(USART3, 38400, flag);
-	result = uart_init(USART6, 38400, flag);
+    //HAL_Init();
+    uint8_t flowcontrol =0 ;
+    int result = 1 ;
+	result &= uart_init(USART1, 38400,flag, flowcontrol);
+	result &= uart_init(USART2, 38400,flag, flowcontrol);
+	result &= uart_init(USART3, 38400,flag, flowcontrol);
+	result &= uart_init(USART6, 38400,flag, flowcontrol);
 
+	if (!result)
+		return 0;
+
+	I2C_LowLevel_Init(I2C1, 100000, 0xD0); //mpu9250 address
 	/* Delay init */
-	TM_DELAY_Init();
+	//TM_DELAY_Init();
     
     /* Init LEDs */
-    TM_DISCO_LedInit();
+    //TM_DISCO_LedInit();
     
     /* Init USART, TX = PA2, RX = PA3 */
-    TM_USART_Init(USART2, TM_USART_PinsPack_1, 921600);
-    I2C_Init();
+    //TM_USART_Init(USART2, TM_USART_PinsPack_1, 921600);
+    //I2C_Init();
     /* Init MPU9250 */
-    if (TM_MPU9250_Init(&MPU9250, TM_MPU9250_Device_0) != TM_MPU9250_Result_Ok) {
-        printf("Device error!\r\n");
+    //if (TM_MPU9250_Init(&MPU9250, TM_MPU9250_Device_0) != TM_MPU9250_Result_Ok) {
+    //    printf("Device error!\r\n");
         while (1);
-    }
+    //}
     
-    printf("Device connected!\r\n");
+    //printf("Device connected!\r\n");
     
-    TM_EXTI_Attach(GPIOA, GPIO_PIN_0, TM_EXTI_Trigger_Rising);
+    //TM_EXTI_Attach(GPIOA, GPIO_PIN_0, TM_EXTI_Trigger_Rising);
     
-    TM_AHRSIMU_Init(&IMU, 1000, 0.5, 0);
+    //TM_AHRSIMU_Init(&IMU, 1000, 0.5, 0);
     
-    while (1) {
-        if (TM_MPU9250_DataReady(&MPU9250) == TM_MPU9250_Result_Ok) {
-            TM_MPU9250_ReadAcce(&MPU9250);
-            TM_MPU9250_ReadGyro(&MPU9250);
-            TM_MPU9250_ReadMag(&MPU9250);
+    //while (1) {
+    //    if (TM_MPU9250_DataReady(&MPU9250) == TM_MPU9250_Result_Ok) {
+     //       TM_MPU9250_ReadAcce(&MPU9250);
+     //       TM_MPU9250_ReadGyro(&MPU9250);
+     //       TM_MPU9250_ReadMag(&MPU9250);
+     //
+     //       TM_AHRSIMU_UpdateIMU(&IMU, MPU9250.Gx, MPU9250.Gy, MPU9250.Gz, MPU9250.Ax, MPU9250.Ay, MPU9250.Az);
             
-            TM_AHRSIMU_UpdateIMU(&IMU, MPU9250.Gx, MPU9250.Gy, MPU9250.Gz, MPU9250.Ax, MPU9250.Ay, MPU9250.Az);
-            
-            printf("R: %f, P: %f, Y: %f\n", IMU.Roll, IMU.Pitch, IMU.Yaw);
+     //       printf("R: %f, P: %f, Y: %f\n", IMU.Roll, IMU.Pitch, IMU.Yaw);
             
 //            printf("Ax: %f, Ay: %f, Az: %f, Gx: %f, Gy: %f, Gz: %f\n", 
 //                MPU9250.Ax, MPU9250.Ay, MPU9250.Az,
@@ -99,20 +106,56 @@ int main(void) {
 //            printf("Mx: %d, My: %d, Mz: %d\r\n",
 //                MPU9250.Mx, MPU9250.My, MPU9250.Mz
 //            );
-        }
-	}
+    //    }
+	//}
 }
 
 /* Printf handler */
 int fputc(int ch, FILE* fil) {
-    TM_USART_Putc(USART2, ch);
+    //TM_USART_Putc(USART2, ch);
     
     return ch;
 }
 
 /* EXTI handler */
 void TM_EXTI_Handler(uint16_t GPIO_Pin) {
-    TM_DISCO_LedToggle(LED_ALL);
+    //TM_DISCO_LedToggle(LED_ALL);
 }
+void USART1_IRQHandler (void)
+{
+	if( USART_GetITStatus (USART1 , USART_IT_RXNE ) != RESET)
+	{
+		uint8_t data;
+		if(USART1->CR3 == USART_HardwareFlowControl_CTS)
+		{
+			// clear the interrupt
+			USART_ClearITPendingBit (USART1 , USART_IT_RXNE );
+		}
 
+		// buffer the data (or toss it if there 's no room
+		// Flow control will prevent this
+		data = USART_ReceiveData ( USART1 ) & 0xff;
+		if (! Enqueue (& UART1_RXq , data))
+			RxOverflow = 1;
+		if(USART1->CR3 == USART_HardwareFlowControl_CTS)
+		{
+			if ( QueueAvail (& UART1_RXq ) > HIGH_WATER )
+				GPIO_WriteBit (GPIOA , GPIO_Pin_12 , 1);
+		}
+	}
+
+	if( USART_GetITStatus (USART1 , USART_IT_TXE ) != RESET)
+	{
+		uint8_t data;
+		/* Write one byte to the transmit data register */
+		if ( Dequeue (& UART1_TXq , &data)){
+			USART_SendData (USART1 , data);
+		} else {
+		// if we have nothing to send , disable the interrupt
+		// and wait for a kick
+			USART_ITConfig (USART1 , USART_IT_TXE , DISABLE );
+			TxPrimed = 0;
+		}
+	}
+}
 

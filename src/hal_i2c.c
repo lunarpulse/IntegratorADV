@@ -4,14 +4,7 @@
 #include "stm32f4xx_gpio.h"
 #include "hal_i2c.h"
 
-typedef enum{
-	Error,
-	Success
-} Status;
-
-# define Timed(x) Timeout = 0xFFFF; while (x) \
-		{ if (Timeout -- == 0) goto errReturn ;}
-
+#define Timed(x) Timeout = 0xFFFF; while (x){ if (Timeout -- == 0) goto errReturn ;}
 
 void I2C_LowLevel_Init ( I2C_TypeDef * I2Cx , int ClockSpeed , int OwnAddress )
 {

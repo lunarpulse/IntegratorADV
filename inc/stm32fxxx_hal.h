@@ -124,7 +124,7 @@ extern "C" {
  */
 
 /* Include project config file */
-#include "defines.h"
+//#include "defines.h"
 
 /* Check if HAL drivers enabled */
 #ifndef USE_HAL_DRIVER

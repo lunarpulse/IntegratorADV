@@ -8,7 +8,7 @@ extern "C" {
 
 #include "stm32f4xx.h"
 typedef enum{
-	Error,
+	Error = 0,
 	Success
 } Status;
 
