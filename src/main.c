@@ -16,12 +16,14 @@
 /* Include my libraries here */
 #include "defines.h"
 
-#include "stm32f4xx.h"
-#include "stm32f4xx_i2c.h"
-#include "stm32f4xx_rcc.h"
-#include "stm32f4xx_gpio.h"
+#include <stm32f4xx.h>
+#include <stm32f4xx_i2c.h>
+#include <stm32f4xx_rcc.h>
+#include <stm32f4xx_gpio.h>
+#include <stm32f4xx_usart.h>
 
 #include "hal_i2c.h"
+#include "hal_usart.h"
 //#include "tm_stm32_disco.h"
 //#include "tm_stm32_delay.h"
 //#include "tm_stm32_mpu9250.h"
@@ -35,12 +37,30 @@ TM_MPU9250_t MPU9250;
 
 TM_AHRSIMU_t IMU;
 
+//USART_TypeDef* uart1;
+//USART_TypeDef* uart2;
+//USART_TypeDef* uart3;
+//USART_TypeDef* uart6;
+
 int main(void) {
+	// use all the usarts
+	uint16_t flag;
+	//uart1 = USART1;
+	//uart2 = USART2;
+	//uart3 = USART3;
+	//uart6 = USART6;
+
 	/* Initialize system */
 	SystemInit();
     
     HAL_Init();
 	
+    int result;
+	result = uart_init(USART1, 38400, flag);
+	result = uart_init(USART2, 38400, flag);
+	result = uart_init(USART3, 38400, flag);
+	result = uart_init(USART6, 38400, flag);
+
 	/* Delay init */
 	TM_DELAY_Init();
     
@@ -94,3 +114,5 @@ int fputc(int ch, FILE* fil) {
 void TM_EXTI_Handler(uint16_t GPIO_Pin) {
     TM_DISCO_LedToggle(LED_ALL);
 }
+
+

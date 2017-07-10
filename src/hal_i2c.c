@@ -1,13 +1,14 @@
-#include "hal_i2c.h"
+#include "stm32f4xx.h"
 #include "stm32f4xx_i2c.h"
 #include "stm32f4xx_rcc.h"
 #include "stm32f4xx_gpio.h"
-#include "stm32f4xx.h"
+#include "hal_i2c.h"
 
 typedef enum{
 	Error,
 	Success
 } Status;
+
 # define Timed(x) Timeout = 0xFFFF; while (x) \
 		{ if (Timeout -- == 0) goto errReturn ;}
 
