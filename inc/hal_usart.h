@@ -7,9 +7,16 @@ extern "C" {
 #endif
 
 #include <stm32f4xx.h>
+#include <stm32f4xx_rcc.h>
+#include <stm32f4xx_gpio.h>
+#include <stm32f4xx_usart.h>
+#include "queue.h"
 
 #define HIGH_WATER ( QUEUE_SIZE - 6)
-struct Queue UART1_TXq , UART1_RXq ,UART2_TXq , UART2_RXq, UART3_TXq , UART3_RXq,UART6_TXq , UART6_RXq;
+struct Queue UART1_TXq , UART1_RXq ,UART2_TXq , UART2_RXq, UART3_TXq , UART3_RXq, UART6_TXq , UART6_RXq;
+
+static int TxPrimed;
+int RxOverflow;
 
 int putchar_poll (USART_TypeDef* USARTx,int c);
 int getchar_poll (USART_TypeDef* USARTx);

@@ -1,13 +1,4 @@
-#include <stm32f4xx.h>
-#include <stm32f4xx_rcc.h>
-#include <stm32f4xx_gpio.h>
-#include <stm32f4xx_usart.h>
-
 #include "hal_usart.h"
-#include "queue.h"
-
-static int TxPrimed = 0;
-
 
 int putchar_poll (USART_TypeDef* USARTx, int c)
 {
@@ -161,8 +152,8 @@ int uart_init(USART_TypeDef* USARTx, uint32_t USART_BaudRate, uint32_t flags, ui
 
 	//RCC_APB2Periph_AFIO is required?
 	//TODO: XXX check if the USART1 is on GPIOA if not change the GIO accordingly
-	RCC_APB2PeriphClockCmd ( apb | ahb , ENABLE );
-
+	RCC_APB2PeriphClockCmd ( apb  , ENABLE );
+	RCC_AHB1PeriphClockCmd ( ahb, ENABLE);
 	GPIO_InitTypeDef GPIO_InitStruct ;
 	GPIO_StructInit (& GPIO_InitStruct );
 

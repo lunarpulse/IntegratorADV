@@ -25,27 +25,30 @@
 #include "hal_i2c.h"
 #include "hal_usart.h"
 #include "queue.h"
+#include "hal_timer.h"
 
-//#include "tm_stm32_disco.h"
-//#include "tm_stm32_delay.h"
-//#include "tm_stm32_mpu9250.h"
-//#include "tm_stm32_usart.h"
-//#include "tm_stm32_exti.h"
-//#include "tm_stm32_ahrs_imu.h"
 #include "stdio.h"
 
 
 //TM_MPU9250_t MPU9250;
 
 //TM_AHRSIMU_t IMU;
-extern int TxPrimed = 0;
-extern int RxOverflow = 0;
 //USART_TypeDef* uart1;
 //USART_TypeDef* uart2;
 //USART_TypeDef* uart3;
 //USART_TypeDef* uart6;
 
 int main(void) {
+
+	/* Initialize system */
+	SystemInit();
+
+	PWM_TIM_t PWM_Data;
+
+	PWM_InitTimer(TIM2, &PWM_Data, 10000);
+	PWM_InitChannel(TIM2, PWM_Channel_1, PWM_PinsPack_2);
+	/* Set 70% duty cycle */
+	PWM_SetChannelPercent(TIM2, &PWM_Data, PWM_Channel_1, 70);
 	// use all the usarts
 	uint16_t flag = 1;
 	//uart1 = USART1;
@@ -53,9 +56,11 @@ int main(void) {
 	//uart3 = USART3;
 	//uart6 = USART6;
 
-	/* Initialize system */
-	SystemInit();
+
     
+	//timer_init(TIM2, 100000, 10000);
+	//int pw = 90;
+	//TIM_SetCompare2 (TIM2 , pw);
     //HAL_Init();
     uint8_t flowcontrol =0 ;
     int result = 1 ;
@@ -159,3 +164,9 @@ void USART1_IRQHandler (void)
 	}
 }
 
+volatile uint32_t ticker =0;
+
+void SysTick_Handler(void)
+{
+  ticker++;
+}

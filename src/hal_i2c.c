@@ -1,7 +1,5 @@
 #include "stm32f4xx.h"
-#include "stm32f4xx_i2c.h"
-#include "stm32f4xx_rcc.h"
-#include "stm32f4xx_gpio.h"
+
 #include "hal_i2c.h"
 
 #define Timed(x) Timeout = 0xFFFF; while (x){ if (Timeout -- == 0) goto errReturn ;}
@@ -21,6 +19,7 @@ void I2C_LowLevel_Init ( I2C_TypeDef * I2Cx , int ClockSpeed , int OwnAddress )
 		/* I2C1 clock enable */
 		RCC_APB1PeriphClockCmd ( RCC_APB1Periph_I2C1 , ENABLE );
 		/* I2C1 SDA and SCL configuration */
+		GPIO_PinAFConfig(GPIOB, GPIO_PinSource6|GPIO_PinSource9, GPIO_AF_I2C1);	/* Alternate function */
 		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_9 ;
 		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz ;
 		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF ;
@@ -28,6 +27,32 @@ void I2C_LowLevel_Init ( I2C_TypeDef * I2Cx , int ClockSpeed , int OwnAddress )
 		/* I2C1 Reset */
 		RCC_APB1PeriphResetCmd ( RCC_APB1Periph_I2C1 , ENABLE );
 		RCC_APB1PeriphResetCmd ( RCC_APB1Periph_I2C1 , DISABLE );
+	}
+	else if (I2Cx == I2C2){
+		/* I2C1 clock enable */
+		RCC_APB1PeriphClockCmd ( RCC_APB1Periph_I2C2 , ENABLE );
+		/* I2C1 SDA and SCL configuration */
+		GPIO_PinAFConfig(GPIOB, GPIO_PinSource10|GPIO_PinSource11, GPIO_AF_I2C1);	/* Alternate function */
+		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11 ;
+		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz ;
+		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF ;
+		GPIO_Init (GPIOB , & GPIO_InitStructure );
+		/* I2C1 Reset */
+		RCC_APB1PeriphResetCmd ( RCC_APB1Periph_I2C2 , ENABLE );
+		RCC_APB1PeriphResetCmd ( RCC_APB1Periph_I2C2 , DISABLE );
+	}
+	else if (I2Cx == I2C3){
+		/* I2C1 clock enable */
+		RCC_APB1PeriphClockCmd ( RCC_APB1Periph_I2C3 , ENABLE );
+		/* I2C1 SDA and SCL configuration */
+		GPIO_PinAFConfig(GPIOB, GPIO_PinSource8|GPIO_PinSource9, GPIO_AF_I2C1);	/* Alternate function */
+		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9 ;
+		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz ;
+		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF ;
+		GPIO_Init (GPIOB , & GPIO_InitStructure );
+		/* I2C1 Reset */
+		RCC_APB1PeriphResetCmd ( RCC_APB1Periph_I2C3 , ENABLE );
+		RCC_APB1PeriphResetCmd ( RCC_APB1Periph_I2C3 , DISABLE );
 	}
 	else { /* I2C2 ... */}
 	/* Configure I2Cx
