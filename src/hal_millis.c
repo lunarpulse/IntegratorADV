@@ -5,8 +5,11 @@ volatile uint32_t ticker;
 void SysTick_Init(void)
 {
 
-	SysTick_Config(53760); //SystemCoreClock / 1000 here roughly 1ms 1kHz
-	SCB->SHP[0x0B] = 0Xe0; //high priority
+	if(SysTick_Config(SystemCoreClock / 1000))
+		while(1) //SystemCoreClock / 1000 or 53760 here roughly 1ms 1kHz
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+	NVIC_SetPriority(SysTick_IRQn,0);
+	//SCB->SHP[0x0B] = 0X00; //high priority low number? or high number?
 	NVIC_EnableIRQ(SysTick_IRQn);
 
   ticker = 0;
