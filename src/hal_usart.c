@@ -148,7 +148,7 @@ int uart_init(USART_TypeDef* USARTx, uint32_t USART_BaudRate, uint32_t flags, ui
 	}else{
 		return 0;
 	}
-	/* USART4, USART5 uses pins of USART3 */
+	/* USART4, USART5 use pins of USART3 */
 
 	//RCC_APB2Periph_AFIO is required?
 	//TODO: XXX check if the USART1 is on GPIOA if not change the GIO accordingly

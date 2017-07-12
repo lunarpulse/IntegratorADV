@@ -255,7 +255,8 @@ typedef	struct
 
 }ImuState_t;
 //void sampleIMUtoSensor(I2C_TypeDef * I2Cx, ImuState_t *imu_state , SensorData * sensorData);
-void sampleIMU(I2C_TypeDef * I2Cx, ImuState_t *imu_state);
+int sampleIMU(I2C_TypeDef * I2Cx, ImuState_t *imu_state);
+int sampleIMUtoSensor(I2C_TypeDef * I2Cx, ImuState_t *imu_state , SensorData * sensorData);
 void getAres(ImuState_t *imu_state);
 void getGres(ImuState_t *imu_state);
 void getMres(ImuState_t *imu_state);
@@ -272,6 +273,7 @@ void writeByte(I2C_TypeDef * I2Cx, uint8_t address, uint8_t subAddress, uint8_t 
 uint8_t readByte(I2C_TypeDef * I2Cx, uint8_t address, uint8_t subAddress);
 void readBytes(I2C_TypeDef * I2Cx, uint8_t address, uint8_t subAddress, uint8_t count, uint8_t * dest);
 void MadgwickQuaternionUpdate(ImuState_t *imu_state, float ax, float ay, float az, float gx, float gy, float gz, float mx, float my, float mz);
+uint8_t imu_dataReady(I2C_TypeDef * I2Cx, ImuState_t *imu_state);
 void MahonyQuaternionUpdate(ImuState_t *imu_state, float ax, float ay, float az, float gx, float gy, float gz, float mx, float my, float mz);
 
 

@@ -90,102 +90,96 @@ void imu_init(I2C_TypeDef * I2Cx, ImuState_t *imu_state)
 
 	/* IMU identification, check and calibration */
 
-	uint8_t c[4];
-	//initAK8963(handle, imu_state, imu_state->magCalibration);
+	uint8_t c;
 
-
-
-	initMPU9250(I2Cx, imu_state);
-	delay(5);
-	calibrateMPU9250(I2Cx, imu_state->gyroBias, imu_state->accelBias); // Calibrate gyro and accelerometers, load biases in bias registers
-	delay(5);
-	delay(5);
-	MPU9250SelfTest(I2Cx, imu_state->SelfTest);
-  delay(5);
-  readBytes(I2Cx, MPU9250_ADDRESS, WHO_AM_I_MPU9250<<0x01, 4, c);  // Read WHO_AM_I register for MPU-9250
-  if (SerialDebug) {
-		char *temp = NULL;
-		Sasprintf(temp, "MPU9250\nI AM %x  I should be %x", *c, 0x71);
-		uart_printf(temp);
-		free(temp);
-  }
-  delay(20);
-  if (*c == 0x71) // WHO_AM_I should always be 0x71
-  {
-    if (SerialDebug) {
-      uart_printf("MPU9250 is online, now self-testing\n");
-    }
-    MPU9250SelfTest(I2Cx, imu_state->SelfTest); // Start by performing self test and reporting values
-    if (SerialDebug) {
-			char *temp = NULL;
-			for(int i = 0; i< 6; i++)
-			{
-				Sasprintf(temp, "x-axis self test: acceleration trim within : %3.1f%% of factory value\n", imu_state->SelfTest[i]);
-			}
-			uart_printf(temp);
-			free(temp);
-    }
-    delay(10);
-    getAres(imu_state);
-    getGres(imu_state);
-    getMres(imu_state);
-    calibrateMPU9250(I2Cx, imu_state->gyroBias, imu_state->accelBias); // Calibrate gyro and accelerometers, load biases in bias registers
-    if (SerialDebug) {
-			char *temp = NULL;
-			Sasprintf(temp, " MPU9250 calibrated and its bias\n x   y   z  \n %i %i %i mg\n%3.3f %3.3f %3.3fo/s\n", (int)(1000 * imu_state->accelBias[0]),(int)(1000 * imu_state->accelBias[1]),(int)(1000 * imu_state->accelBias[2]),imu_state->gyroBias[0],imu_state->gyroBias[1],imu_state->gyroBias[2]);
-			uart_printf(temp);
-			free(temp);
-    }
-    delay(10);
-    initMPU9250(I2Cx, imu_state);
-    if (SerialDebug) {
-      uart_printf("MPU9250 initialized for active data mode....\n"); // Initialize device for active mode read of acclerometer, gyroscope, and temperature
-    }
-    // Read the WHO_AM_I register of the magnetometer, this is a good test of communication
-    uint8_t d = readByte(I2Cx, AK8963_ADDRESS, WHO_AM_I_AK8963);  // Read WHO_AM_I register for AK8963
-    if (SerialDebug) {
-			char *temp = NULL;
-			Sasprintf(temp, "AK8963 \nI AM %x  I should be %x", d, 0x48);
-			uart_printf(temp);
-			free(temp);
-    }
-    delay(10);
-
-    // Get magnetometer calibration from AK8963 ROM
-    initAK8963(I2Cx, imu_state, imu_state->magCalibration);
+	c = readByte(I2Cx, MPU9250_ADDRESS, WHO_AM_I_MPU9250);  // Read WHO_AM_I register for MPU-9250
+	if (SerialDebug) {
+	char *temp = NULL;
+	Sasprintf(temp, "MPU9250\nI AM %x  I should be %x", c, 0x71);
+	uart_printf(temp);
+	free(temp);
+	}
+	delay(200);
+	if (c == 0x71) // WHO_AM_I should always be 0x71
+	{
 		if (SerialDebug) {
-     uart_printf("AK8963 initialized for active data mode....\n"); // Initialize device for active mode read of magnetometer
-    }
-    {
-      //magcalMPU9250(magBias, magScale);
-      float magbias[3] = {0, 0, 0};
-      magbias[0] = 54.;  // User environmental x-axis correction in milliGauss, should be automatically calculated
-      magbias[1] = 280.;  // User environmental x-axis correction in milliGauss
-      magbias[2] = -448.;  // User environmental x-axis correction in milliGauss
-
-      imu_state->magBias[0] = (float) magbias[0] * imu_state->mRes * imu_state->magCalibration[0]; // save mag biases in G for main program
-      imu_state->magBias[1] = (float) magbias[1] * imu_state->mRes * imu_state->magCalibration[1];
-      imu_state->magBias[2] = (float) magbias[2] * imu_state->mRes * imu_state->magCalibration[2];
-
-      // Get soft iron correction estimate hardcoded now but it can be monitored and corrected when new soft iron is introduced.
-      imu_state->magScale[0] = 0.92;
-      imu_state->magScale[1] = 1.03;
-      imu_state->magScale[2] = 1.05;
-    }
-    if (SerialDebug) {
-			uart_printf("Calibration values: \n");
+		  uart_printf("MPU9250 is online, now self-testing\n");
+		}
+		MPU9250SelfTest(I2Cx, imu_state->SelfTest); // Start by performing self test and reporting values
+		if (SerialDebug) {
 			char *temp = NULL;
-			Sasprintf(temp, "X-Axis sensitivity adjustment value %3.2f\nY-Axis sensitivity adjustment value %3.2f\nZ-Axis sensitivity adjustment value %3.2f\n", imu_state->magCalibration[0], imu_state->magCalibration[1], imu_state->magCalibration[2]);
+			Sasprintf(temp, "x-axis self test: acceleration trim within : %3.1f%% of factory value\n", imu_state->SelfTest[0]);
+			Sasprintf(temp, "y-axis self test: acceleration trim within : %3.1f%% of factory value\n", imu_state->SelfTest[1]);
+			Sasprintf(temp, "x-axis self test: acceleration trim within : %3.1f%% of factory value\n", imu_state->SelfTest[2]);
+			Sasprintf(temp, "x-axis self test: gyration trim within : %3.1f%% of factory value\n", imu_state->SelfTest[3]);
+			Sasprintf(temp, "y-axis self test: gyration trim within : %3.1f%% of factory value\n", imu_state->SelfTest[4]);
+			Sasprintf(temp, "z-axis self test: gyration trim within : %3.1f%% of factory value\n", imu_state->SelfTest[5]);
 			uart_printf(temp);
 			free(temp);
-    }
-    delay(5);
-  }
-  else
-  {
+		}
+		delay(10);
+		getAres(imu_state);
+		getGres(imu_state);
+		getMres(imu_state);
+		calibrateMPU9250(I2Cx, imu_state->gyroBias, imu_state->accelBias); // Calibrate gyro and accelerometers, load biases in bias registers
+		if (SerialDebug) {
+				char *temp = NULL;
+				Sasprintf(temp, " MPU9250 calibrated and its bias\n x   y   z  \n %i %i %i mg\n%3.3f %3.3f %3.3fo/s\n", (int)(1000 * imu_state->accelBias[0]),(int)(1000 * imu_state->accelBias[1]),(int)(1000 * imu_state->accelBias[2]),imu_state->gyroBias[0],imu_state->gyroBias[1],imu_state->gyroBias[2]);
+				uart_printf(temp);
+				free(temp);
+		}
+		delay(200);
+		initMPU9250(I2Cx, imu_state);
+		if (SerialDebug) {
+		  uart_printf("MPU9250 initialized for active data mode....\n"); // Initialize device for active mode read of acclerometer, gyroscope, and temperature
+		}
+		// Read the WHO_AM_I register of the magnetometer, this is a good test of communication
+		uint8_t d = readByte(I2Cx, AK8963_ADDRESS, WHO_AM_I_AK8963);  // Read WHO_AM_I register for AK8963
+		if (SerialDebug) {
+				char *temp = NULL;
+				Sasprintf(temp, "AK8963 \nI AM %x  I should be %x", d, 0x48);
+				uart_printf(temp);
+				free(temp);
+		}
+		delay(50);
+
+		// Get magnetometer calibration from AK8963 ROM
+		initAK8963(I2Cx, imu_state, imu_state->magCalibration);
+		if (SerialDebug) {
+		 uart_printf("AK8963 initialized for active data mode....\n"); // Initialize device for active mode read of magnetometer
+		}
+
+		{
+		  //magcalMPU9250(magBias, magScale);
+		  float magbias[3] = {0, 0, 0};
+		  magbias[0] = 54.;  // User environmental x-axis correction in milliGauss, should be automatically calculated
+		  magbias[1] = 280.;  // User environmental x-axis correction in milliGauss
+		  magbias[2] = -448.;  // User environmental x-axis correction in milliGauss
+
+		  imu_state->magBias[0] = (float) magbias[0] * imu_state->mRes * imu_state->magCalibration[0]; // save mag biases in G for main program
+		  imu_state->magBias[1] = (float) magbias[1] * imu_state->mRes * imu_state->magCalibration[1];
+		  imu_state->magBias[2] = (float) magbias[2] * imu_state->mRes * imu_state->magCalibration[2];
+
+		  // Get soft iron correction estimate hardcoded now but it can be monitored and corrected when new soft iron is introduced.
+		  imu_state->magScale[0] = 0.92;
+		  imu_state->magScale[1] = 1.03;
+		  imu_state->magScale[2] = 1.05;
+		}
+
+		if (SerialDebug) {
+				uart_printf("Calibration values: \n");
+				char *temp = NULL;
+				Sasprintf(temp, "X-Axis sensitivity adjustment value %3.2f\nY-Axis sensitivity adjustment value %3.2f\nZ-Axis sensitivity adjustment value %3.2f\n", imu_state->magCalibration[0], imu_state->magCalibration[1], imu_state->magCalibration[2]);
+				uart_printf(temp);
+				free(temp);
+		}
+		delay(100);
+	}
+	else
+	{
     if (SerialDebug) {
 			char *temp = NULL;
-			Sasprintf(temp, "Could not connect to MPU9250: 0x%x", *c);
+			Sasprintf(temp, "Could not connect to MPU9250: 0x%x", c);
 			uart_printf(temp);
 			free(temp);
     }
@@ -194,6 +188,7 @@ void imu_init(I2C_TypeDef * I2Cx, ImuState_t *imu_state)
 	/* IMU identification, check and calibration */
 
 }
+
 int main(void) {
 
 	/* Initialize system */
@@ -211,11 +206,12 @@ int main(void) {
 	//TIM_SetCompare2 (TIM2 , pw);
 
 	// use all the usarts
-	uint16_t flag = 1;
+	uint16_t flag = 1; /* flag not used implement it to precondition the register flags*/
 
 	//HAL_Init();
 	hal_debug_uart_init(DEBUG_USART_BAUD_115200);
 
+	/* 0 for no flow control */
     uint8_t flowcontrol =0 ;
     int result = 1 ;
 	result &= uart_init(USART1, 38400,flag, flowcontrol);
@@ -224,20 +220,27 @@ int main(void) {
 	result &= uart_init(USART6, 38400,flag, flowcontrol);
 
 	if (!result)
-		while(1);
+		// led on for indicating failure of usart initiation
+		while(1); // hang in here as errors in usart initiation.
 		//return 0;
 
 	I2C_LowLevel_Init(I2C1, 400000, 0x34<<1); //mpu9250 address
 
-	ImuState_t mpu9250;
+	/* start to use millis ans delay functions */
 	SysTick_Init();
+
+	/* temperary data structure this will be sent or processed further*/
+	SensorData sensorData;
+
+	/* initiating the imu onboard*/
+	ImuState_t mpu9250;
 	imu_init(I2C1, &mpu9250);
-	//initAK8963(I2C1, &mpu9250);
+
 	uart_printf("set up finished\n");
 
 	while(1)
 	{
-		sampleIMU(I2C1, &mpu9250);
+		sampleIMUtoSensor(I2C1, &mpu9250, &sensorData);
 	}
 
 	/* Delay init */
@@ -325,111 +328,111 @@ void USART1_IRQHandler (void)
 }
 void USART2_IRQHandler (void)
 {
-	if( USART_GetITStatus (USART1 , USART_IT_RXNE ) != RESET)
+	if( USART_GetITStatus (USART2 , USART_IT_RXNE ) != RESET)
 	{
 		uint8_t data;
-		if(USART1->CR3 == USART_HardwareFlowControl_CTS)
+		if(USART2->CR3 == USART_HardwareFlowControl_CTS)
 		{
 			// clear the interrupt
-			USART_ClearITPendingBit (USART1 , USART_IT_RXNE );
+			USART_ClearITPendingBit (USART2 , USART_IT_RXNE );
 		}
 
 		// buffer the data (or toss it if there 's no room
 		// Flow control will prevent this
-		data = USART_ReceiveData ( USART1 ) & 0xff;
-		if (! Enqueue (& UART1_RXq , data))
+		data = USART_ReceiveData ( USART2 ) & 0xff;
+		if (! Enqueue (& UART2_RXq , data))
 			RxOverflow = 1;
-		if(USART1->CR3 == USART_HardwareFlowControl_CTS)
+		if(USART2->CR3 == USART_HardwareFlowControl_CTS)
 		{
-			if ( QueueAvail (& UART1_RXq ) > HIGH_WATER )
-				GPIO_WriteBit (GPIOA , GPIO_Pin_12 , 1);
+			if ( QueueAvail (& UART2_RXq ) > HIGH_WATER )
+				GPIO_WriteBit (GPIOD , GPIO_Pin_3 , 1);
 		}
 	}
 
-	if( USART_GetITStatus (USART1 , USART_IT_TXE ) != RESET)
+	if( USART_GetITStatus (USART2 , USART_IT_TXE ) != RESET)
 	{
 		uint8_t data;
 		/* Write one byte to the transmit data register */
-		if ( Dequeue (& UART1_TXq , &data)){
-			USART_SendData (USART1 , data);
+		if ( Dequeue (& UART2_TXq , &data)){
+			USART_SendData (USART2 , data);
 		} else {
 		// if we have nothing to send , disable the interrupt
 		// and wait for a kick
-			USART_ITConfig (USART1 , USART_IT_TXE , DISABLE );
+			USART_ITConfig (USART2 , USART_IT_TXE , DISABLE );
 			TxPrimed = 0;
 		}
 	}
 }
 void USART3_IRQHandler (void)
 {
-	if( USART_GetITStatus (USART1 , USART_IT_RXNE ) != RESET)
+	if( USART_GetITStatus (USART3 , USART_IT_RXNE ) != RESET)
 	{
 		uint8_t data;
-		if(USART1->CR3 == USART_HardwareFlowControl_CTS)
+		if(USART3->CR3 == USART_HardwareFlowControl_CTS)
 		{
 			// clear the interrupt
-			USART_ClearITPendingBit (USART1 , USART_IT_RXNE );
+			USART_ClearITPendingBit (USART3 , USART_IT_RXNE );
 		}
 
 		// buffer the data (or toss it if there 's no room
 		// Flow control will prevent this
-		data = USART_ReceiveData ( USART1 ) & 0xff;
-		if (! Enqueue (& UART1_RXq , data))
+		data = USART_ReceiveData ( USART3 ) & 0xff;
+		if (! Enqueue (& UART3_RXq , data))
 			RxOverflow = 1;
-		if(USART1->CR3 == USART_HardwareFlowControl_CTS)
+		if(USART3->CR3 == USART_HardwareFlowControl_CTS)
 		{
-			if ( QueueAvail (& UART1_RXq ) > HIGH_WATER )
-				GPIO_WriteBit (GPIOA , GPIO_Pin_12 , 1);
+			if ( QueueAvail (& UART3_RXq ) > HIGH_WATER )
+				GPIO_WriteBit (GPIOD , GPIO_Pin_11 , 1);
 		}
 	}
 
-	if( USART_GetITStatus (USART1 , USART_IT_TXE ) != RESET)
+	if( USART_GetITStatus (USART3 , USART_IT_TXE ) != RESET)
 	{
 		uint8_t data;
 		/* Write one byte to the transmit data register */
-		if ( Dequeue (& UART1_TXq , &data)){
-			USART_SendData (USART1 , data);
+		if ( Dequeue (& UART3_TXq , &data)){
+			USART_SendData (USART3 , data);
 		} else {
 		// if we have nothing to send , disable the interrupt
 		// and wait for a kick
-			USART_ITConfig (USART1 , USART_IT_TXE , DISABLE );
+			USART_ITConfig (USART3 , USART_IT_TXE , DISABLE );
 			TxPrimed = 0;
 		}
 	}
 }
 void USART6_IRQHandler (void)
 {
-	if( USART_GetITStatus (USART1 , USART_IT_RXNE ) != RESET)
+	if( USART_GetITStatus (USART6 , USART_IT_RXNE ) != RESET)
 	{
 		uint8_t data;
-		if(USART1->CR3 == USART_HardwareFlowControl_CTS)
+		if(USART6->CR3 == USART_HardwareFlowControl_CTS)
 		{
 			// clear the interrupt
-			USART_ClearITPendingBit (USART1 , USART_IT_RXNE );
+			USART_ClearITPendingBit (USART6 , USART_IT_RXNE );
 		}
 
 		// buffer the data (or toss it if there 's no room
 		// Flow control will prevent this
-		data = USART_ReceiveData ( USART1 ) & 0xff;
-		if (! Enqueue (& UART1_RXq , data))
+		data = USART_ReceiveData ( USART6 ) & 0xff;
+		if (! Enqueue (& UART6_RXq , data))
 			RxOverflow = 1;
-		if(USART1->CR3 == USART_HardwareFlowControl_CTS)
+		if(USART6->CR3 == USART_HardwareFlowControl_CTS)
 		{
-			if ( QueueAvail (& UART1_RXq ) > HIGH_WATER )
-				GPIO_WriteBit (GPIOA , GPIO_Pin_12 , 1);
+			if ( QueueAvail (& UART6_RXq ) > HIGH_WATER )
+				GPIO_WriteBit (GPIOG , GPIO_Pin_13 , 1);
 		}
 	}
 
-	if( USART_GetITStatus (USART1 , USART_IT_TXE ) != RESET)
+	if( USART_GetITStatus (USART6 , USART_IT_TXE ) != RESET)
 	{
 		uint8_t data;
 		/* Write one byte to the transmit data register */
-		if ( Dequeue (& UART1_TXq , &data)){
-			USART_SendData (USART1 , data);
+		if ( Dequeue (& UART6_TXq , &data)){
+			USART_SendData (USART6 , data);
 		} else {
 		// if we have nothing to send , disable the interrupt
 		// and wait for a kick
-			USART_ITConfig (USART1 , USART_IT_TXE , DISABLE );
+			USART_ITConfig (USART6 , USART_IT_TXE , DISABLE );
 			TxPrimed = 0;
 		}
 	}
