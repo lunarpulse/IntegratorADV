@@ -9,7 +9,7 @@
 #define PACKSIZE 32
 #define SENSORNUM 2
 #define EXPDEBUG1 true
-#define SerialDebug 1// set to true to get Serial output for debugging
+#define IMUSERIALDEBUG  // set to true to get Serial output for debugging
 #define PI           3.14159265358979323846f  /* pi */
 //Magnetometer Registers
 #define AK8963_ADDRESS   0x0C<<1

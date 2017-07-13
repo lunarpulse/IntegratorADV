@@ -32,7 +32,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h> //free
-
+#define SERIALDEBUG
 //Safer asprintf macro
 #define Sasprintf(write_to, ...) { \
 		char *tmp_string_for_extend = (write_to); \
@@ -70,11 +70,11 @@ void imu_init(I2C_TypeDef * I2Cx, ImuState_t *imu_state)
 	imu_state->mscale = MFS_16BITS; // Choose either 14-bit or 16-bit magnetometer resolution
 	imu_state->mmode = 0x06;        // 2 for 8 Hz, 6 for 100 Hz continuous magnetometer data read
 	for(int i = 0; i < 3; i++){
-		imu_state->magCalibration[i]= 0;
-		imu_state->magBias[i]= 0;
-		imu_state->magScale[i]= 0;
-		imu_state->accelBias[i]= 0;
-		imu_state->gyroBias[i]= 0;
+		imu_state->magCalibration[i]= 0.f;
+		imu_state->magBias[i]= 0.f;
+		imu_state->magScale[i]= 0.f;
+		imu_state->accelBias[i]= 0.f;
+		imu_state->gyroBias[i]= 0.f;
 		imu_state->q[i+1] =0.0f;
 		imu_state->eInt[i] =0.0f;
 	}
@@ -93,62 +93,62 @@ void imu_init(I2C_TypeDef * I2Cx, ImuState_t *imu_state)
 	uint8_t c;
 
 	c = readByte(I2Cx, MPU9250_ADDRESS, WHO_AM_I_MPU9250);  // Read WHO_AM_I register for MPU-9250
-	if (SerialDebug) {
+#ifdef IMUSERIALDEBUG
 	char *temp = NULL;
 	Sasprintf(temp, "MPU9250\nI AM %x  I should be %x", c, 0x71);
 	uart_printf(temp);
 	free(temp);
-	}
+#endif
 	delay(200);
 	if (c == 0x71) // WHO_AM_I should always be 0x71
 	{
-		if (SerialDebug) {
-		  uart_printf("MPU9250 is online, now self-testing\n");
-		}
+#ifdef IMUSERIALDEBUG
+	  uart_printf("MPU9250 is online, now self-testing\n");
+#endif
 		MPU9250SelfTest(I2Cx, imu_state->SelfTest); // Start by performing self test and reporting values
-		if (SerialDebug) {
-			char *temp = NULL;
-			Sasprintf(temp, "x-axis self test: acceleration trim within : %3.1f%% of factory value\n", imu_state->SelfTest[0]);
-			Sasprintf(temp, "y-axis self test: acceleration trim within : %3.1f%% of factory value\n", imu_state->SelfTest[1]);
-			Sasprintf(temp, "x-axis self test: acceleration trim within : %3.1f%% of factory value\n", imu_state->SelfTest[2]);
-			Sasprintf(temp, "x-axis self test: gyration trim within : %3.1f%% of factory value\n", imu_state->SelfTest[3]);
-			Sasprintf(temp, "y-axis self test: gyration trim within : %3.1f%% of factory value\n", imu_state->SelfTest[4]);
-			Sasprintf(temp, "z-axis self test: gyration trim within : %3.1f%% of factory value\n", imu_state->SelfTest[5]);
-			uart_printf(temp);
-			free(temp);
-		}
+#ifdef IMUSERIALDEBUG
+		//char *temp = NULL;
+		Sasprintf(temp, "x-axis self test: acceleration trim within : %3.1f%% of factory value\n", imu_state->SelfTest[0]);
+		Sasprintf(temp, "y-axis self test: acceleration trim within : %3.1f%% of factory value\n", imu_state->SelfTest[1]);
+		Sasprintf(temp, "x-axis self test: acceleration trim within : %3.1f%% of factory value\n", imu_state->SelfTest[2]);
+		Sasprintf(temp, "x-axis self test: gyration trim within : %3.1f%% of factory value\n", imu_state->SelfTest[3]);
+		Sasprintf(temp, "y-axis self test: gyration trim within : %3.1f%% of factory value\n", imu_state->SelfTest[4]);
+		Sasprintf(temp, "z-axis self test: gyration trim within : %3.1f%% of factory value\n", imu_state->SelfTest[5]);
+		uart_printf(temp);
+		free(temp);
+#endif
 		delay(10);
 		getAres(imu_state);
 		getGres(imu_state);
 		getMres(imu_state);
 		calibrateMPU9250(I2Cx, imu_state->gyroBias, imu_state->accelBias); // Calibrate gyro and accelerometers, load biases in bias registers
-		if (SerialDebug) {
-				char *temp = NULL;
-				Sasprintf(temp, " MPU9250 calibrated and its bias\n x   y   z  \n %i %i %i mg\n%3.3f %3.3f %3.3fo/s\n", (int)(1000 * imu_state->accelBias[0]),(int)(1000 * imu_state->accelBias[1]),(int)(1000 * imu_state->accelBias[2]),imu_state->gyroBias[0],imu_state->gyroBias[1],imu_state->gyroBias[2]);
-				uart_printf(temp);
-				free(temp);
-		}
+#ifdef IMUSERIALDEBUG
+		//char *temp = NULL;
+		Sasprintf(temp, " MPU9250 calibrated and its bias\n x   y   z  \n %i %i %i mg\n%3.3f %3.3f %3.3fo/s\n", (int)(1000 * imu_state->accelBias[0]),(int)(1000 * imu_state->accelBias[1]),(int)(1000 * imu_state->accelBias[2]),imu_state->gyroBias[0],imu_state->gyroBias[1],imu_state->gyroBias[2]);
+		uart_printf(temp);
+		free(temp);
+#endif
 		delay(200);
 		initMPU9250(I2Cx, imu_state);
-		if (SerialDebug) {
-		  uart_printf("MPU9250 initialized for active data mode....\n"); // Initialize device for active mode read of acclerometer, gyroscope, and temperature
-		}
-		// Read the WHO_AM_I register of the magnetometer, this is a good test of communication
+#ifdef IMUSERIALDEBUG
+
+		uart_printf("MPU9250 initialized for active data mode....\n"); // Initialize device for active mode read of acclerometer, gyroscope, and temperature
+#endif
+		 // Read the WHO_AM_I register of the magnetometer, this is a good test of communication
 		uint8_t d = readByte(I2Cx, AK8963_ADDRESS, WHO_AM_I_AK8963);  // Read WHO_AM_I register for AK8963
-		if (SerialDebug) {
-				char *temp = NULL;
-				Sasprintf(temp, "AK8963 \nI AM %x  I should be %x", d, 0x48);
-				uart_printf(temp);
-				free(temp);
-		}
+#ifdef IMUSERIALDEBUG
+		//char *temp = NULL;
+		Sasprintf(temp, "AK8963 \nI AM %x  I should be %x", d, 0x48);
+		uart_printf(temp);
+		free(temp);
+#endif
 		delay(50);
 
 		// Get magnetometer calibration from AK8963 ROM
 		initAK8963(I2Cx, imu_state, imu_state->magCalibration);
-		if (SerialDebug) {
+#ifdef IMUSERIALDEBUG
 		 uart_printf("AK8963 initialized for active data mode....\n"); // Initialize device for active mode read of magnetometer
-		}
-
+#endif
 		{
 		  //magcalMPU9250(magBias, magScale);
 		  float magbias[3] = {0, 0, 0};
@@ -166,25 +166,25 @@ void imu_init(I2C_TypeDef * I2Cx, ImuState_t *imu_state)
 		  imu_state->magScale[2] = 1.05;
 		}
 
-		if (SerialDebug) {
-				uart_printf("Calibration values: \n");
-				char *temp = NULL;
-				Sasprintf(temp, "X-Axis sensitivity adjustment value %3.2f\nY-Axis sensitivity adjustment value %3.2f\nZ-Axis sensitivity adjustment value %3.2f\n", imu_state->magCalibration[0], imu_state->magCalibration[1], imu_state->magCalibration[2]);
-				uart_printf(temp);
-				free(temp);
-		}
+#ifdef IMUSERIALDEBUG
+		uart_printf("Calibration values: \n");
+		//char *temp = NULL;
+		Sasprintf(temp, "X-Axis sensitivity adjustment value %3.2f\nY-Axis sensitivity adjustment value %3.2f\nZ-Axis sensitivity adjustment value %3.2f\n", imu_state->magCalibration[0], imu_state->magCalibration[1], imu_state->magCalibration[2]);
+		uart_printf(temp);
+		free(temp);
+#endif
 		delay(100);
 	}
 	else
 	{
-    if (SerialDebug) {
-			char *temp = NULL;
-			Sasprintf(temp, "Could not connect to MPU9250: 0x%x", c);
-			uart_printf(temp);
-			free(temp);
-    }
-    while (1) ; // Loop forever if communication doesn't happen
-  }
+#ifdef IMUSERIALDEBUG
+		//char *temp = NULL;
+		Sasprintf(temp, "Could not connect to MPU9250: 0x%x", c);
+		uart_printf(temp);
+		free(temp);
+#endif
+		while (1) ; // Loop forever if communication doesn't happen
+	}
 	/* IMU identification, check and calibration */
 
 }
@@ -209,8 +209,9 @@ int main(void) {
 	uint16_t flag = 1; /* flag not used implement it to precondition the register flags*/
 
 	//HAL_Init();
+#ifdef SERIALDEBUG
 	hal_debug_uart_init(DEBUG_USART_BAUD_115200);
-
+#endif
 	/* 0 for no flow control */
     uint8_t flowcontrol =0 ;
     int result = 1 ;

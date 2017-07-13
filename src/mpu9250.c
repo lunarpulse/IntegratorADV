@@ -27,7 +27,7 @@
 //======Sensor and servo init start
 /* change this with pwm code to drive a servo */
 //Servo myservo; //download the servo library and inspect how it works and use it in C code later
-const int ultrasonic_sensor_address[SENSORNUM] = {34, 24}; // TODO: XXX Define What I want for the receivers address
+const int ultrasonic_sensor_address[SENSORNUM] = {34, 24}; // DONE: DONE Define What I want for the receivers address
 
 //===================================================================================================================
 //====== Set of helper function to access acceleration. gyroscope, magnetometer, and temperature data
@@ -96,121 +96,124 @@ int sampleIMUtoSensor(I2C_TypeDef * I2Cx, ImuState_t *imu_state , SensorData * s
 	  /* if the internal timer more than set time TIMGAP then sample it show print them and update with the sensorData stuct */
 	  if (imu_state->delt_t > TIMEGAP) {
 		  if (!AHRS) { //if AHRS false
-			  if (SerialDebug) {
-				char *temp = NULL;
-				// Print acceleration values in milligs!
-				Sasprintf(temp,"X-acceleration:  %f2.3 mg ",1000 * imu_state->ax);
-				Sasprintf(temp,"Y-acceleration: %f2.3 mg ",1000 * imu_state->ay);
-				Sasprintf(temp,"Z-acceleration: %f2.3 mg \n",1000 * imu_state->az);
+#ifdef IMUSERIALDEBUG
+			char *temp = NULL;
+			// Print acceleration values in milligs!
+			Sasprintf(temp,"X-acceleration:  %f2.3 mg ",1000 * imu_state->ax);
+			Sasprintf(temp,"Y-acceleration: %f2.3 mg ",1000 * imu_state->ay);
+			Sasprintf(temp,"Z-acceleration: %f2.3 mg \n",1000 * imu_state->az);
 
-				// Print gyro values in degree/sec
-				Sasprintf(temp,"X-gyro rate: %f2.3 degrees/sec ",imu_state->gx);
-				Sasprintf(temp,"Y-gyro rate: %f2.3 degrees/sec ",imu_state->gy);
-				Sasprintf(temp,"Z-gyro rate: %f2.3 degrees/sec \n",imu_state->gz);
+			// Print gyro values in degree/sec
+			Sasprintf(temp,"X-gyro rate: %f2.3 degrees/sec ",imu_state->gx);
+			Sasprintf(temp,"Y-gyro rate: %f2.3 degrees/sec ",imu_state->gy);
+			Sasprintf(temp,"Z-gyro rate: %f2.3 degrees/sec \n",imu_state->gz);
 
-				// Print mag values in degree/sec
-				Sasprintf(temp,"X-mag field: %f2.3 mG ",imu_state->mx);
-				Sasprintf(temp,"Y-mag field: %f2.3 mG ",imu_state->my);
-				Sasprintf(temp,"Z-mag field: %f2.3 mG \n",imu_state->mz);
+			// Print mag values in degree/sec
+			Sasprintf(temp,"X-mag field: %f2.3 mG ",imu_state->mx);
+			Sasprintf(temp,"Y-mag field: %f2.3 mG ",imu_state->my);
+			Sasprintf(temp,"Z-mag field: %f2.3 mG \n",imu_state->mz);
 
-				uart_printf(temp);
-				free(temp);
+			uart_printf(temp);
+			free(temp);
 
-				imu_state->tempCount = readTempData(I2Cx);  // Read the adc values
-				imu_state->temperature = ((float) imu_state->tempCount) / 333.87f + 21.0f; // Temperature in degrees Centigrade TODO need to change it to the
-				sensorData->gyroValue.temperature = (uint16_t)(imu_state->temperature);
-				// Print temperature in degrees Centigrade
-				//uart_printf("Temperature is ");  uart_printf(temperature, 1);  uart_printf(" degrees C\n"); // Print T values to tenths of s degree C
+			imu_state->tempCount = readTempData(I2Cx);  // Read the adc values
+			imu_state->temperature = ((float) imu_state->tempCount) / 333.87f + 21.0f; // Temperature in degrees Centigrade TODO need to change it to the
+			sensorData->gyroValue.temperature = (uint16_t)(imu_state->temperature);
+			// Print temperature in degrees Centigrade
+			//uart_printf("Temperature is ");  uart_printf(temperature, 1);  uart_printf(" degrees C\n"); // Print T values to tenths of s degree C
 
-			  }
-			  imu_state->prevMeasure = millis();
+#endif
 		  }
-		  else { //if AHRS true
+		  else
+		  { //if AHRS true
 			// Serial print and/or display at 0.5 s rate independent of data rates
-			  if (SerialDebug) {
-				char *temp = NULL;
+#ifdef IMUSERIALDEBUG
+			char *temp = NULL;
 
-				Sasprintf(temp,"ax = %f2.3",(int)1000 * imu_state->ax);
-				Sasprintf(temp," ay = %f2.3",(int)1000 * imu_state->ay);
-				Sasprintf(temp," az = %f2.3 mg\n",(int)1000 * imu_state->az);
-				Sasprintf(temp,"gx = %f2.3", imu_state->gx);
-				Sasprintf(temp," gy = %f2.3", imu_state->gy);
-				Sasprintf(temp," gz = %f2.3 deg/s\n", imu_state->gz);
-				Sasprintf(temp,"mx = %d", (int)imu_state->mx );
-				Sasprintf(temp," my = %d", (int)imu_state->my );
-				Sasprintf(temp," mz = %d mG\n", (int)imu_state->mz );
+			Sasprintf(temp,"ax = %f2.3",(int)1000 * imu_state->ax);
+			Sasprintf(temp," ay = %f2.3",(int)1000 * imu_state->ay);
+			Sasprintf(temp," az = %f2.3 mg\n",(int)1000 * imu_state->az);
+			Sasprintf(temp,"gx = %f2.3", imu_state->gx);
+			Sasprintf(temp," gy = %f2.3", imu_state->gy);
+			Sasprintf(temp," gz = %f2.3 deg/s\n", imu_state->gz);
+			Sasprintf(temp,"mx = %d", (int)imu_state->mx );
+			Sasprintf(temp," my = %d", (int)imu_state->my );
+			Sasprintf(temp," mz = %d mG\n", (int)imu_state->mz );
 
-				Sasprintf(temp,"q0 = %f2.3",imu_state->q[0]);
-				Sasprintf(temp," qx = %f2.3",imu_state->q[1]);
-				Sasprintf(temp," qy = %f2.3",imu_state->q[2]);
-				Sasprintf(temp," qz = %f2.3\n",imu_state->q[3]);
+			Sasprintf(temp,"q0 = %f2.3",imu_state->q[0]);
+			Sasprintf(temp," qx = %f2.3",imu_state->q[1]);
+			Sasprintf(temp," qy = %f2.3",imu_state->q[2]);
+			Sasprintf(temp," qz = %f2.3\n",imu_state->q[3]);
 
-				uart_printf(temp);
-				free(temp);
-			  }
-
-			  // Define output variables from updated quaternion---these are Tait-Bryan angles, commonly used in aircraft orientation.
-			  // In this coordinate system, the positive z-axis is down toward Earth.
-			  // Yaw is the angle between Sensor x-axis and Earth magnetic North (or true North if corrected for local declination, looking down on the sensor positive yaw is counterclockwise.
-			  // Pitch is angle between sensor x-axis and Earth ground plane, toward the Earth is positive, up toward the sky is negative.
-			  // Roll is angle between sensor y-axis and Earth ground plane, y-axis up is positive roll.
-			  // These arise from the definition of the homogeneous rotation matrix constructed from quaternions.
-			  // Tait-Bryan angles as well as Euler angles are non-commutative; that is, the get the correct orientation the rotations must be
-			  // applied in the correct order which for this configuration is yaw, pitch, and then roll.
-			  // For more see http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles which has additional links.
-			  imu_state->yaw   = atan2(2.0f * (imu_state->q[1] * imu_state->q[2] + imu_state->q[0] * imu_state->q[3]), imu_state->q[0] * imu_state->q[0] + imu_state->q[1] * imu_state->q[1] - imu_state->q[2] * imu_state->q[2] - imu_state->q[3] * imu_state->q[3]);
-			  imu_state->pitch = -asin(2.0f * (imu_state->q[1] * imu_state->q[3] - imu_state->q[0] * imu_state->q[2]));
-			  imu_state->roll  = atan2(2.0f * (imu_state->q[0] * imu_state->q[1] + imu_state->q[2] * imu_state->q[3]), imu_state->q[0] * imu_state->q[0] - imu_state->q[1] * imu_state->q[1] - imu_state->q[2] * imu_state->q[2] + imu_state->q[3] * imu_state->q[3]);
-			  imu_state->pitch *= 180.0f / PI;
-			  imu_state->yaw   *= 180.0f / PI;
-			  imu_state->yaw   -= 10.9f; // Declination at Danville, California is 13 degrees 48 minutes and 47 seconds on 2014-04-04
-			  imu_state->roll  *= 180.0f / PI;
-
-			  sensorData->gyroValue.yaw = (uint16_t)(imu_state->yaw);
-			  sensorData->gyroValue.pitch = (uint16_t)(imu_state->pitch);
-			  sensorData->gyroValue.roll = (uint16_t)(imu_state->roll);
-			  sensorData->gyroValue.freq = (float)(imu_state->sumCount / imu_state->sum);
-
-			  //printing all results
-			  if (SerialDebug) {
-						char *temp = NULL;
-						Sasprintf(temp, "Yaw, Pitch, Roll: %f2.3, %f2.3, %f2.3\nrate =  %f2.3Hz\n", imu_state->yaw, imu_state->pitch, imu_state->roll, (float)imu_state->sumCount / imu_state->sum);
-						uart_printf(temp);
-						free(temp);
-			  }
-			  // With these settings the filter is updating at a ~145 Hz rate using the Madgwick scheme and
-			  // >200 Hz using the Mahony scheme even though the display refreshes at only 2 Hz.
-			  // The filter update rate is determined mostly by the mathematical steps in the respective algorithms,
-			  // the processor speed (8 MHz for the 3.3V Pro Mini), and the magnetometer ODR:
-			  // an ODR of 10 Hz for the magnetometer produce the above rates, maximum magnetometer ODR of 100 Hz produces
-			  // filter update rates of 36 - 145 and ~38 Hz for the Madgwick and Mahony schemes, respectively.
-			  // This is presumably because the magnetometer read takes longer than the gyro or accelerometer reads.
-			  // This filter update rate should be fast enough to maintain accurate platform orientation for
-			  // stabilization control of a fast-moving robot or quadcopter. Compare to the update rate of 200 Hz
-			  // produced by the on-board Digital Motion Processor of Invensense's MPU6050 6 DoF and MPU9150 9DoF sensors.
-			  // The 3.3 V 8 MHz Pro Mini is doing pretty well!
-			  //TODO: interrupt make to led light gpio
-					//led_toggle(GPIOD,LED_RED);
-			  imu_state->prevMeasure = millis();
-			  imu_state->sumCount = 0.f;
-			  imu_state->sum = 0.f;
+			uart_printf(temp);
+			free(temp);
+#endif
 		  }
 
-		  /* timed SensorData struct update*/
-		  sensorData->gyroValue.xa = 1000.f * imu_state->ax;
-		  sensorData->gyroValue.ya = 1000.f * imu_state->ay;
-		  sensorData->gyroValue.za = 1000.f * imu_state->az;
 
-		  sensorData->gyroValue.xg = imu_state->gx;
-		  sensorData->gyroValue.yg = imu_state->gy;
-		  sensorData->gyroValue.zg = imu_state->gz;
+			// Define output variables from updated quaternion---these are Tait-Bryan angles, commonly used in aircraft orientation.
+			// In this coordinate system, the positive z-axis is down toward Earth.
+			// Yaw is the angle between Sensor x-axis and Earth magnetic North (or true North if corrected for local declination, looking down on the sensor positive yaw is counterclockwise.
+			// Pitch is angle between sensor x-axis and Earth ground plane, toward the Earth is positive, up toward the sky is negative.
+			// Roll is angle between sensor y-axis and Earth ground plane, y-axis up is positive roll.
+			// These arise from the definition of the homogeneous rotation matrix constructed from quaternions.
+			// Tait-Bryan angles as well as Euler angles are non-commutative; that is, the get the correct orientation the rotations must be
+			// applied in the correct order which for this configuration is yaw, pitch, and then roll.
+			// For more see http://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles which has additional links.
+			imu_state->yaw   = atan2(2.0f * (imu_state->q[1] * imu_state->q[2] + imu_state->q[0] * imu_state->q[3]), imu_state->q[0] * imu_state->q[0] + imu_state->q[1] * imu_state->q[1] - imu_state->q[2] * imu_state->q[2] - imu_state->q[3] * imu_state->q[3]);
+			imu_state->pitch = -asin(2.0f * (imu_state->q[1] * imu_state->q[3] - imu_state->q[0] * imu_state->q[2]));
+			imu_state->roll  = atan2(2.0f * (imu_state->q[0] * imu_state->q[1] + imu_state->q[2] * imu_state->q[3]), imu_state->q[0] * imu_state->q[0] - imu_state->q[1] * imu_state->q[1] - imu_state->q[2] * imu_state->q[2] + imu_state->q[3] * imu_state->q[3]);
+			imu_state->pitch *= 180.0f / PI;
+			imu_state->yaw   *= 180.0f / PI;
+			imu_state->yaw   -= 10.9f; // Declination at Danville, California is 13 degrees 48 minutes and 47 seconds on 2014-04-04
+			imu_state->roll  *= 180.0f / PI;
 
-		  sensorData->gyroValue.xm = imu_state->mx;
-		  sensorData->gyroValue.ym = imu_state->my;
-		  sensorData->gyroValue.zm = imu_state->mz;
+			sensorData->gyroValue.yaw = (uint16_t)(imu_state->yaw);
+			sensorData->gyroValue.pitch = (uint16_t)(imu_state->pitch);
+			sensorData->gyroValue.roll = (uint16_t)(imu_state->roll);
+			sensorData->gyroValue.freq = (float)(imu_state->sumCount / imu_state->sum);
+
+		  //printing all results
+#ifdef IMUSERIALDEBUG
+			char *temp = NULL;
+			Sasprintf(temp, "Yaw, Pitch, Roll: %f2.3, %f2.3, %f2.3\nrate =  %f2.3Hz\n", imu_state->yaw, imu_state->pitch, imu_state->roll, (float)imu_state->sumCount / imu_state->sum);
+			uart_printf(temp);
+			free(temp);
+#endif
+			// With these settings the filter is updating at a ~145 Hz rate using the Madgwick scheme and
+			// >200 Hz using the Mahony scheme even though the display refreshes at only 2 Hz.
+			// The filter update rate is determined mostly by the mathematical steps in the respective algorithms,
+			// the processor speed (8 MHz for the 3.3V Pro Mini), and the magnetometer ODR:
+			// an ODR of 10 Hz for the magnetometer produce the above rates, maximum magnetometer ODR of 100 Hz produces
+			// filter update rates of 36 - 145 and ~38 Hz for the Madgwick and Mahony schemes, respectively.
+			// This is presumably because the magnetometer read takes longer than the gyro or accelerometer reads.
+			// This filter update rate should be fast enough to maintain accurate platform orientation for
+			// stabilization control of a fast-moving robot or quadcopter. Compare to the update rate of 200 Hz
+			// produced by the on-board Digital Motion Processor of Invensense's MPU6050 6 DoF and MPU9150 9DoF sensors.
+			// The 3.3 V 8 MHz Pro Mini is doing pretty well!
+			//TODO: interrupt make to led light gpio
+				//led_toggle(GPIOD,LED_RED);
+			imu_state->prevMeasure = millis();
+			imu_state->sumCount = 0.f;
+			imu_state->sum = 0.f;
+
+			/* timed SensorData struct update*/
+			sensorData->gyroValue.xa = 1000.f * imu_state->ax;
+			sensorData->gyroValue.ya = 1000.f * imu_state->ay;
+			sensorData->gyroValue.za = 1000.f * imu_state->az;
+
+			sensorData->gyroValue.xg = imu_state->gx;
+			sensorData->gyroValue.yg = imu_state->gy;
+			sensorData->gyroValue.zg = imu_state->gz;
+
+			sensorData->gyroValue.xm = imu_state->mx;
+			sensorData->gyroValue.ym = imu_state->my;
+			sensorData->gyroValue.zm = imu_state->mz;
 	  }
+
   }
-  else{
+  else
+  {
 	  return 0;
   }
 	  return 1;
@@ -724,7 +727,7 @@ uint8_t readByte(I2C_TypeDef * I2Cx, uint8_t address, uint8_t subAddress)
 	//not busy now
 	//Set slave address
 	//I2Cx->SR1 |= (0x01 << 3);
-	const uint8_t data [1] = {0};
+	uint8_t data = 0;
   	//uint8_t data=0; // `data` will store the register data
 	const uint32_t numData = 1;
 	Status result = Success;
@@ -753,7 +756,7 @@ uint8_t readByte(I2C_TypeDef * I2Cx, uint8_t address, uint8_t subAddress)
 
 
 
-  return *data;                             // Return data read from slave register
+  return data;                             // Return data read from slave register
 }
 
 void readBytes(I2C_TypeDef * I2Cx, uint8_t address, uint8_t subAddress, uint8_t count, uint8_t * dest)

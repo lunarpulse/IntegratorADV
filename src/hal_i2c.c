@@ -19,8 +19,8 @@ void I2C_LowLevel_Init ( I2C_TypeDef * I2Cx , int ClockSpeed , int OwnAddress )
 		/* I2C1 clock enable */
 		RCC_APB1PeriphClockCmd ( RCC_APB1Periph_I2C1 , ENABLE );
 		/* I2C1 SDA and SCL configuration */
-		GPIO_PinAFConfig(GPIOB, GPIO_PinSource6|GPIO_PinSource9, GPIO_AF_I2C1);	/* Alternate function */
-		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_9 ;
+		GPIO_PinAFConfig(GPIOB, GPIO_PinSource8|GPIO_PinSource9, GPIO_AF_I2C1);	/* Alternate function */
+		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9 ;
 		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz ;
 		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF ;
 		GPIO_Init (GPIOB , & GPIO_InitStructure );
@@ -32,11 +32,11 @@ void I2C_LowLevel_Init ( I2C_TypeDef * I2Cx , int ClockSpeed , int OwnAddress )
 		/* I2C1 clock enable */
 		RCC_APB1PeriphClockCmd ( RCC_APB1Periph_I2C2 , ENABLE );
 		/* I2C1 SDA and SCL configuration */
-		GPIO_PinAFConfig(GPIOB, GPIO_PinSource10|GPIO_PinSource11, GPIO_AF_I2C1);	/* Alternate function */
-		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11 ;
+		GPIO_PinAFConfig(GPIOF, GPIO_PinSource0|GPIO_PinSource1, GPIO_AF_I2C1);	/* Alternate function */
+		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 ;
 		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz ;
 		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF ;
-		GPIO_Init (GPIOB , & GPIO_InitStructure );
+		GPIO_Init (GPIOF , & GPIO_InitStructure );
 		/* I2C1 Reset */
 		RCC_APB1PeriphResetCmd ( RCC_APB1Periph_I2C2 , ENABLE );
 		RCC_APB1PeriphResetCmd ( RCC_APB1Periph_I2C2 , DISABLE );
@@ -45,11 +45,11 @@ void I2C_LowLevel_Init ( I2C_TypeDef * I2Cx , int ClockSpeed , int OwnAddress )
 		/* I2C1 clock enable */
 		RCC_APB1PeriphClockCmd ( RCC_APB1Periph_I2C3 , ENABLE );
 		/* I2C1 SDA and SCL configuration */
-		GPIO_PinAFConfig(GPIOB, GPIO_PinSource8|GPIO_PinSource9, GPIO_AF_I2C1);	/* Alternate function */
-		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9 ;
+		GPIO_PinAFConfig(GPIOH, GPIO_PinSource7|GPIO_PinSource8, GPIO_AF_I2C1);	/* Alternate function */
+		GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7 | GPIO_Pin_8 ;
 		GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz ;
 		GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF ;
-		GPIO_Init (GPIOB , & GPIO_InitStructure );
+		GPIO_Init (GPIOH , & GPIO_InitStructure );
 		/* I2C1 Reset */
 		RCC_APB1PeriphResetCmd ( RCC_APB1Periph_I2C3 , ENABLE );
 		RCC_APB1PeriphResetCmd ( RCC_APB1Periph_I2C3 , DISABLE );
